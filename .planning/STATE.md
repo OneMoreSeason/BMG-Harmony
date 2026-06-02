@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-last_updated: "2026-06-02T22:20:26Z"
+last_updated: "2026-06-02T22:45:00Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 10
+  completed_plans: 2
+  percent: 20
 ---
 
 # State — BMG-Harmony v1
@@ -25,11 +25,11 @@ progress:
 ## Current Position
 
 Phase: 01 (decision-gate-shared-store) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 **Phase**: 1 — Decision Gate + Shared Store
-**Plan**: 01-01 COMPLETE — moving to 01-02
+**Plan**: 01-02 COMPLETE — moving to 01-03
 **Status**: In progress
-**Progress**: [##--------] 10% (1 of 3 plans in phase 1 complete)
+**Progress**: [####------] 20% (2 of 3 plans in phase 1 complete)
 
 ---
 
@@ -37,7 +37,7 @@ Plan: 2 of 3
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Decision Gate + Shared Store | In progress (1/3 plans) | 01-01 |
+| 1. Decision Gate + Shared Store | In progress (2/3 plans) | 01-01, 01-02 |
 | 2. Full Message Board + Battle Cards | Not started | - |
 | 3. Debate Protocol + Token Discipline | Not started | - |
 | 4. Structured Dissent | Not started | - |
@@ -48,12 +48,13 @@ Plan: 2 of 3
 ## Performance Metrics
 
 - Phases complete: 0/5
-- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02)
+- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02 — all delivered in 01-01; MCP server delivering them in 01-02)
 - Phases with plans: 1/5
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 01 | 01 | 15min | 2 | 9 |
+| 01 | 02 | 15min | 1 | 1 |
 
 ---
 
@@ -84,13 +85,12 @@ Plan: 2 of 3
 
 ### Todos
 
-- Execute 01-02-PLAN.md (FastMCP server: harmony_server.py)
 - Execute 01-03-PLAN.md (SETUP.md, .gitignore, agent wiring, dogfood gate)
 
 ---
 
 ## Session Continuity
 
-**Last updated**: 2026-06-02T22:20:26Z
-**Stopped at**: Completed 01-01-PLAN.md — store layer + tests
-**Next action**: Execute 01-02-PLAN.md (FastMCP server with all 4 Phase 1 tools)
+**Last updated**: 2026-06-02T22:45:00Z
+**Stopped at**: Completed 01-02-PLAN.md — harmony_server.py with all 4 MCP tools
+**Next action**: Execute 01-03-PLAN.md (SETUP.md, .gitignore, agent wiring, dogfood gate)
