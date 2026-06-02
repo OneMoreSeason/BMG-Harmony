@@ -57,4 +57,33 @@
 
 ## Traceability
 
-*Populated by roadmapper.*
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| BOARD-01 | Phase 1 | Pending |
+| BOARD-02 | Phase 1 | Pending |
+| BOARD-03 | Phase 2 | Pending |
+| BOARD-04 | Phase 2 | Pending |
+| BOARD-05 | Phase 2 | Pending |
+| CARD-01 | Phase 2 | Pending |
+| CARD-02 | Phase 2 | Pending |
+| CARD-03 | Phase 2 | Pending |
+| DEBATE-01 | Phase 3 | Pending |
+| DEBATE-02 | Phase 3 | Pending |
+| DEBATE-03 | Phase 3 | Pending |
+| DEBATE-04 | Phase 3 | Pending |
+| DEBATE-05 | Phase 3 | Pending |
+| DISSENT-01 | Phase 4 | Pending |
+| DISSENT-02 | Phase 4 | Pending |
+| DISSENT-03 | Phase 4 | Pending |
+| IMPASSE-01 | Phase 5 | Pending |
+| IMPASSE-02 | Phase 5 | Pending |
+| IMPASSE-03 | Phase 5 | Pending |
+| IMPASSE-04 | Phase 5 | Pending |
+| SUMMARY-01 | Phase 5 | Pending |
+| SUMMARY-02 | Phase 5 | Pending |
+| ROLES-01 | Phase 5 | Pending |
+| ROLES-02 | Phase 5 | Pending |
+| ROLES-03 | Phase 5 | Pending |
+| TOKEN-01 | Phase 3 | Pending |
+| TOKEN-02 | Phase 3 | Pending |
+| TOKEN-03 | Phase 3 | Pending |
