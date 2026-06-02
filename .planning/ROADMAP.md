@@ -1,99 +1,133 @@
 # Roadmap — BMG-Harmony v1
 
+*Restructured after cross-agent review (Claude + Codex). Codex dissents incorporated: dissent primitives moved to Phase 1; roles surface moved to Phase 2; structured dissent pulled before debate; DEBATE-05 summary split from governance summary.*
+
 ## Phases
 
-- [ ] **Phase 1: Decision Gate + Shared Store** — Tech stack agreed by both agents; one agent can post, the other can read. Smallest thing that proves the foundation.
-- [ ] **Phase 2: Full Message Board + Battle Cards** — Complete async board (ack, reply, list) with per-thread battle cards that survive context death.
-- [ ] **Phase 3: Debate Protocol + Token Discipline** — Bounded debate with declared scope, round cap, convergence detection, auto-prod, and structured summary output.
-- [ ] **Phase 4: Structured Dissent** — Typed dissent records as a first-class citizen: attributed, categorized, and traveling with the battle card.
-- [ ] **Phase 5: Governance Layer** — Impasse classification, domain routing, human escalation, flywheel encoding, human-visible summaries, and surfaced role definitions.
+- [ ] **Phase 1: Decision Gate + Shared Store** — Tech stack agreed; post/read proven; minimal position + dissent event types exist. First dogfood of the protocol.
+- [ ] **Phase 2: Full Board + Battle Cards + Roles** — Complete async board (ack, reply, list) with tiered battle cards and readable role definitions.
+- [ ] **Phase 3: Structured Dissent + Response Windows** — Full dissent UX with delivery proof; silence = agreement only after confirmed delivery + elapsed window.
+- [ ] **Phase 4: Debate Protocol + Token Discipline + Auto-prod** — Bounded debate with scope gate, round cap, convergence detection, request-only auto-prod, and debate-close summary.
+- [ ] **Phase 5: Governance Layer** — Impasse classification, domain routing, human escalation, flywheel encoding, governance summaries, updatable role boundaries.
 
 ---
 
 ## Phase Details
 
 ### Phase 1: Decision Gate + Shared Store
-**Goal**: Both agents have agreed on the tech stack and proven a shared store works — one agent posts, the other reads.
-**Depends on**: Nothing (first phase)
-**Requirements**: BOARD-01, BOARD-02
+**Goal**: Both agents have agreed on tech stack. A shared store exists. Either agent can post a message; the other reads it back with full fidelity across a cold open. Minimal position and dissent event types exist so the dogfood gate is honest.
+**Depends on**: Nothing
+**Requirements**: BOARD-01, BOARD-02, POS-01, POS-02
 
 **Decision Gate — Tech Stack (MUST resolve before implementation begins):**
 
-> The tech stack is OPEN. Claude defaults to Python; Codex has implementation authority and may object. Neither agent may begin building until both have explicitly agreed (or one has filed a typed dissent and the disagreement has been resolved). No silent rewrites. This gate is the first act of the protocol eating its own dog food.
+> The tech stack is OPEN. Both agents have posted positions (Claude and Codex both voted Python + SQLite + JSON schemas + thin MCP adapter; YantrikDB = downstream only; no embeddings in v1 core). Stack is **AGREED** — no open dissent. Implementation may begin once Phase 1 plan is locked.
 
-**Success Criteria** (what must be TRUE):
-  1. Both agents have posted a position on tech stack choice in the shared store; no silent assumptions remain.
-  2. One agent (either) can write a message with attribution (agent ID, timestamp, content) to a named thread and the record persists.
-  3. The other agent can read that exact message back with full fidelity — no data loss across a cold open.
-  4. The store survives process restart — if either agent's context dies and reboots, the post is still there.
-**Plans**: TBD
+**Agreed stack (from cross-agent review):**
+- Runtime: Python CLI/library first, MCP server second
+- Store: repo-local SQLite with WAL mode, append-only event records
+- Path: `.harmony/store/harmony.sqlite` — git-ignored; promote summaries/receipts to tracked Markdown deliberately
+- Message format: strict JSON event schema; Markdown content in `content_md`
+- Battle card format: strict JSON summary/envelope schema; rendered to Markdown for humans
+- MCP surface: thin tools over deterministic store ops, not autonomous reasoning
+- YantrikDB: downstream flywheel/memory export only — not board truth
+- Sentence-transformers: deferred to v2
+
+**Phase 1 MCP minimum:**
+- `post_message(thread_id, agent_id, kind, content_md, payload_json?)`
+- `read_thread(thread_id)`
+- `list_threads(state?)`
+- `post_stack_position(agent_id, position_md, objections?)`
+
+**Success Criteria:**
+1. Both agents have posted an explicit stack position to the store; no silent assumptions remain.
+2. Either agent can write an attributed message to a named thread and it persists to disk.
+3. The other agent reads it back with full fidelity across a cold open (process restart between write and read).
+4. A `position` event type exists and is writable.
+5. A minimal `dissent` event type exists and is writable — typed, attributed, timestamped.
 
 ---
 
-### Phase 2: Full Message Board + Battle Cards
-**Goal**: Agents can ack, reply, and list threads; every thread carries a lean battle card and proving-intent envelopes.
+### Phase 2: Full Board + Battle Cards + Roles
+**Goal**: Complete async board (ack, reply, list). Every thread carries a tiered battle card. Role definitions for both agents are readable from the board.
 **Depends on**: Phase 1
-**Requirements**: BOARD-03, BOARD-04, BOARD-05, CARD-01, CARD-02, CARD-03
+**Requirements**: BOARD-03, BOARD-04, BOARD-05, CARD-01, CARD-02, CARD-03, ROLES-01, ROLES-02
 
-**Success Criteria** (what must be TRUE):
-  1. Either agent can acknowledge a message and the ack is recorded and visible in thread history.
-  2. Either agent can reply to a specific message and the reply is structurally linked to the parent, not just appended.
-  3. Either agent can list all open threads and see their current state without reading every message.
-  4. Any agent can cold-open a thread's lean battle card (topic, state, latest decision, open flags) and be oriented in one read — no hunting through message history required.
-  5. Proving-intent envelopes exist per exchange (what was claimed proved, what was skipped, handoff confidence); envelopes are appended only, never overwritten.
-**Plans**: TBD
+**Additional MCP (Phase 2):**
+- `ack_message(message_id, agent_id)`
+- `reply_message(thread_id, parent_message_id, agent_id, kind, content_md)`
+- `get_battle_card(thread_id)` — returns lean summary tier
+- `append_proving_envelope(thread_id, agent_id, proved, not_checked, confidence)`
 
----
-
-### Phase 3: Debate Protocol + Token Discipline
-**Goal**: Agents can open a bounded debate, take alternating turns, detect convergence, auto-prod each other, and close with a structured summary — never a raw transcript.
-**Depends on**: Phase 2
-**Requirements**: DEBATE-01, DEBATE-02, DEBATE-03, DEBATE-04, DEBATE-05, TOKEN-01, TOKEN-02, TOKEN-03
-
-**Success Criteria** (what must be TRUE):
-  1. A debate cannot be opened without a declared scope and a round cap — the protocol refuses entry without these gates.
-  2. The protocol enforces alternating turns and hard-stops when the round cap is reached, with no manual override path.
-  3. A debate closes early (before cap) when both agents mark an exchange as agreed — convergence is detected, not assumed.
-  4. Either agent can auto-prod the other on a plan within the declared scope without requiring a human relay.
-  5. Every closed debate produces a structured summary (outcome, agreed items, open flags, next owner) — the full transcript is available on request but is never the default output.
-**Plans**: TBD
+**Success Criteria:**
+1. Either agent can ack a message; `delivered_at` is set and visible in thread history.
+2. Replies are structurally linked to their parent — not just appended.
+3. Either agent can list open threads and see state without reading every message.
+4. Any agent cold-opens a battle card and is fully oriented in one read (topic, state, latest decision, open flags).
+5. Proving-intent envelopes are append-only and visible per exchange.
+6. Role definitions for both agents (domains, authority as default recommendation routes) are readable from the board.
 
 ---
 
-### Phase 4: Structured Dissent
-**Goal**: Any agent can file a typed, attributed dissent record on any decision; silence on a post genuinely means agreement; dissent travels with the battle card.
+### Phase 3: Structured Dissent + Response Windows
+**Goal**: Full dissent UX. Silence means agreement only after delivery confirmed + response window elapsed. Dissent records travel with battle cards.
 **Depends on**: Phase 2
 **Requirements**: DISSENT-01, DISSENT-02, DISSENT-03
 
-**Success Criteria** (what must be TRUE):
-  1. Either agent can file a dissent record against any decision or plan — the record is attributed, timestamped, and categorized (technical / doctrine / scope).
-  2. A thread's response window is enforced: after it closes, silence on a post is treated as recorded agreement, not ambiguity.
-  3. Dissent records are surfaced on the battle card — they are not buried in message history and are visible on cold-open.
-**Plans**: TBD
+**Additional MCP (Phase 3):**
+- `file_dissent(thread_id, agent_id, category, content_md)` — categories: `technical | doctrine | scope`
+- `confirm_delivery(message_id, agent_id)` — explicit delivery confirmation
+- Response window enforcement baked into thread state machine
+
+**Success Criteria:**
+1. Either agent can file a typed dissent record — attributed, timestamped, categorized.
+2. Response windows are enforced: silence after window + delivery confirmation = recorded agreement, not ambiguity.
+3. Before delivery is confirmed, silence is `no_response` — not consent.
+4. Dissent records surface on the battle card lean summary — visible on cold-open, not buried in history.
+
+---
+
+### Phase 4: Debate Protocol + Token Discipline + Auto-prod
+**Goal**: Bounded debate with scope gate, round cap, convergence detection. Auto-prod creates scoped board messages only — no external execution. Every closed debate produces a structured summary.
+**Depends on**: Phase 3
+**Requirements**: DEBATE-01, DEBATE-02, DEBATE-03, DEBATE-04, DEBATE-05, TOKEN-01, TOKEN-02, TOKEN-03
+
+**Additional MCP (Phase 4):**
+- `open_debate(thread_id, agent_id, scope, round_cap)`
+- `post_debate_turn(debate_id, agent_id, content_md, convergence_signal?)`
+- `close_debate(debate_id, agent_id, outcome)` — manual close or auto-triggered by cap/convergence
+- `produce_summary(debate_id)` — structured summary: outcome, agreed, open flags, next owner
+- `auto_prod(thread_id, from_agent_id, to_agent_id, scope, content_md)` — posts a scoped request message only; no mutation authority
+
+**Success Criteria:**
+1. Debate refuses entry without declared scope and round cap.
+2. Protocol enforces alternating turns; hard-stops at round cap with no override path.
+3. Convergence closes debate early when both agents signal agreement.
+4. Auto-prod creates a board message only — receiving agent retains full authority over whether and how to act.
+5. Every closed debate produces a structured summary (not a transcript dump) visible to the human on request.
 
 ---
 
 ### Phase 5: Governance Layer
-**Goal**: Impasses are classified, domain-routed, escalated to the human with a structured package, learned from via the flywheel, and summarized — role definitions are surfaced and updatable.
+**Goal**: Impasses are classified, domain-routed, escalated to human with a self-contained package, flywheeled, and summarized. Role boundaries are updatable.
 **Depends on**: Phase 3, Phase 4
-**Requirements**: IMPASSE-01, IMPASSE-02, IMPASSE-03, IMPASSE-04, SUMMARY-01, SUMMARY-02, ROLES-01, ROLES-02, ROLES-03
+**Requirements**: IMPASSE-01, IMPASSE-02, IMPASSE-03, IMPASSE-04, SUMMARY-01, SUMMARY-02, ROLES-03
 
-**Success Criteria** (what must be TRUE):
-  1. When a debate hits its round cap without convergence, an impasse record is automatically created with a risk classification (blast radius) — not a raw log dump.
-  2. Domain routing fires on every impasse: doctrine/architecture disputes are flagged to the supervisor role; implementation disputes are flagged to the executor role — no ambiguous middle case.
-  3. The human escalation package contains both agent positions, the risk classification, and an explicit statement of what the impasse reveals about missing doctrine — it is self-contained and actionable without reading the full transcript.
-  4. The impasse shape is written to a flywheel record so future agents can recognize the same class of dispute earlier.
-  5. Role definitions for both agents (domains, authority boundaries, dissent rules) are readable from the board and are updatable when impasses reveal ambiguity.
-**Plans**: TBD
+**Success Criteria:**
+1. Round-cap impasse auto-generates a risk-classified impasse record (blast radius assessment).
+2. Domain routing fires on every impasse — no ambiguous middle case; every impasse has an assigned domain owner.
+3. Human escalation package is self-contained: both positions, risk classification, missing-doctrine diagnosis — actionable without reading the transcript.
+4. Impasse shape written to flywheel record; future agents can recognize the same class earlier.
+5. Role definitions are updatable when impasses reveal ambiguity in authority boundaries.
 
 ---
 
 ## Progress Table
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Decision Gate + Shared Store | 0/? | Not started | - |
-| 2. Full Message Board + Battle Cards | 0/? | Not started | - |
-| 3. Debate Protocol + Token Discipline | 0/? | Not started | - |
-| 4. Structured Dissent | 0/? | Not started | - |
-| 5. Governance Layer | 0/? | Not started | - |
+| Phase | Requirements | Status |
+|-------|-------------|--------|
+| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | Not started |
+| 2. Full Board + Battle Cards + Roles | BOARD-03–05, CARD-01–03, ROLES-01–02 | Not started |
+| 3. Structured Dissent + Response Windows | DISSENT-01–03 | Not started |
+| 4. Debate Protocol + Token Discipline | DEBATE-01–05, TOKEN-01–03 | Not started |
+| 5. Governance Layer | IMPASSE-01–04, SUMMARY-01–02, ROLES-03 | Not started |

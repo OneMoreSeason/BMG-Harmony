@@ -36,7 +36,7 @@ It is not a relay. It is the thing that gives a multi-agent system **institution
 | Claude | Supervisor / briefer / reviewer | Architecture, doctrine, coordination law |
 | Codex | Executor / builder / Brain 1 | Implementation, runtime, build decisions |
 
-**Role authority is domain-partitioned, not hierarchical.** Claude has final say on doctrine and architecture shape; Codex has final say on implementation detail. Neither defers silently to the other on their home turf.
+**Role authority is domain-partitioned, not hierarchical.** Claude is the domain-owner and default recommendation route for doctrine and architecture; Codex is the domain-owner and default recommendation route for implementation and runtime. Neither defers silently to the other on their home turf. User instruction, project law, safety gates, and evidence can override either agent. Either agent can still dissent when domain authority is technically wrong or under-evidenced.
 
 ## Authority and Conflict Resolution
 
