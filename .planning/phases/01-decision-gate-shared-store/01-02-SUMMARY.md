@@ -70,7 +70,9 @@ completed: 2026-06-02
 
 1. **Task 1: harmony_server.py — FastMCP server with all 4 tools** — `96d01b9` (feat)
 
-**Plan metadata:** (pending final metadata commit)
+**Plan metadata:** `b7f9ae3` (docs — SUMMARY, STATE, ROADMAP)
+
+**Checkpoint resolved:** Task 2 human-verify approved — ToolError from `mcp.server.fastmcp.exceptions` confirmed OK; `import server.harmony_server` clean with zero stdout.
 
 ## Files Created/Modified
 
