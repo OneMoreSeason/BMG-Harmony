@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-06-02T22:12:13.814Z"
+status: in-progress
+last_updated: "2026-06-02T22:20:26Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 10
 ---
 
 # State — BMG-Harmony v1
@@ -24,10 +24,12 @@ progress:
 
 ## Current Position
 
+Phase: 01 (decision-gate-shared-store) — EXECUTING
+Plan: 2 of 3
 **Phase**: 1 — Decision Gate + Shared Store
-**Plan**: None yet (planning not started)
-**Status**: Not started
-**Progress**: [----------] 0%
+**Plan**: 01-01 COMPLETE — moving to 01-02
+**Status**: In progress
+**Progress**: [##--------] 10% (1 of 3 plans in phase 1 complete)
 
 ---
 
@@ -35,7 +37,7 @@ progress:
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Decision Gate + Shared Store | Not started | - |
+| 1. Decision Gate + Shared Store | In progress (1/3 plans) | 01-01 |
 | 2. Full Message Board + Battle Cards | Not started | - |
 | 3. Debate Protocol + Token Discipline | Not started | - |
 | 4. Structured Dissent | Not started | - |
@@ -46,8 +48,12 @@ progress:
 ## Performance Metrics
 
 - Phases complete: 0/5
-- Requirements delivered: 0/28
-- Phases with plans: 0/5
+- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02)
+- Phases with plans: 1/5
+
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 01 | 01 | 15min | 2 | 9 |
 
 ---
 
@@ -63,23 +69,28 @@ progress:
 | Cap + convergence stop rule | Bounded by round limit AND convergence detection | Locked |
 | Structured dissent as first-class | Silence = agreement; typed record required for objection | Locked |
 | Human tiebreaker with flywheel | Impasses escalate AND encode a learning note | Locked |
-| Tech stack | Claude defaults Python; Codex has implementation authority and may object. Both must agree explicitly. | OPEN — Phase 1 gate |
+| Tech stack | Python + SQLite WAL + JSONSchema + uuid_utils (uuid7) + FastMCP. Both agents agreed. | LOCKED |
+| ToolError import path | mcp.server.fastmcp.exceptions.ToolError (not mcp.server.fastmcp.ToolError — that path does not exist in 1.27.x) | Locked |
+| revision = last_insert_rowid() | Monotonically increasing per table; no extra query; debuggable | Locked |
+| Thread auto-create via INSERT OR IGNORE | Idempotent; handles concurrent first-posts without race | Locked |
 
 ### Open Questions
 
-- Tech stack: Python, Node, or other? Requires explicit agreement from both Claude and Codex before Phase 1 implementation begins.
+- None — tech stack gate resolved; all Phase 1 plan 01-01 questions answered
 
 ### Blockers
 
-- None yet
+- None
 
 ### Todos
 
-- Plan Phase 1 after tech stack decision gate is resolved
+- Execute 01-02-PLAN.md (FastMCP server: harmony_server.py)
+- Execute 01-03-PLAN.md (SETUP.md, .gitignore, agent wiring, dogfood gate)
 
 ---
 
 ## Session Continuity
 
-**Last updated**: 2026-06-02
-**Next action**: Run `/gsd:plan-phase 1` — but note: Phase 1 begins with the tech stack decision gate. Both agents must post a position and reach explicit agreement before any implementation plan is written.
+**Last updated**: 2026-06-02T22:20:26Z
+**Stopped at**: Completed 01-01-PLAN.md — store layer + tests
+**Next action**: Execute 01-02-PLAN.md (FastMCP server with all 4 Phase 1 tools)

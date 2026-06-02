@@ -24,7 +24,7 @@
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Store foundation: schema.sql, store.py, schema.py, cold-open test suite
+- [x] 01-01-PLAN.md — Store foundation: schema.sql, store.py, schema.py, cold-open test suite
 - [ ] 01-02-PLAN.md — FastMCP server: harmony_server.py with all 4 Phase 1 tools, stderr-only logging
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -152,7 +152,7 @@ Plans:
 
 | Phase | Requirements | Status |
 |-------|-------------|--------|
-| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | Planned |
+| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | In progress (1/3 plans) |
 | 2. Full Board + Battle Cards + Roles | BOARD-03–05, CARD-01–03, ROLES-01–02 | Not started |
 | 3. Structured Dissent + Response Windows | DISSENT-01–03 | Not started |
 | 4. Debate Protocol + Token Discipline | DEBATE-01–05, TOKEN-01–03 | Not started |
