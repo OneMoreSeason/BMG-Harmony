@@ -83,8 +83,18 @@ def test_read_thread(tmp_db):
     assert rows[0]["content_md"] == "First"
     assert rows[1]["content_md"] == "Second"
 
-    # Each row has all 7 columns
-    expected_keys = {"event_id", "thread_id", "agent_id", "kind", "timestamp", "content_md", "payload_json"}
+    # Each row has the Phase 2 enriched event shape.
+    expected_keys = {
+        "event_id",
+        "thread_id",
+        "agent_id",
+        "kind",
+        "timestamp",
+        "content_md",
+        "payload_json",
+        "parent_event_id",
+        "acks",
+    }
     assert set(rows[0].keys()) == expected_keys
 
     # Unknown thread returns empty list

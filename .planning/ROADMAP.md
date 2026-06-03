@@ -4,8 +4,8 @@
 
 ## Phases
 
-- [ ] **Phase 1: Decision Gate + Shared Store** — Tech stack agreed; post/read proven; minimal position + dissent event types exist. First dogfood of the protocol.
-- [ ] **Phase 2: Full Board + Battle Cards + Roles** — Complete async board (ack, reply, list) with tiered battle cards and readable role definitions.
+- [x] **Phase 1: Decision Gate + Shared Store** - Tech stack agreed; post/read proven; minimal position + dissent event types exist. First dogfood of the protocol.
+- [x] **Phase 2: Full Board + Battle Cards + Roles** - Complete async board (ack, reply, list) with tiered battle cards and readable role definitions.
 - [ ] **Phase 3: Structured Dissent + Response Windows** — Full dissent UX with delivery proof; silence = agreement only after confirmed delivery + elapsed window.
 - [ ] **Phase 4: Debate Protocol + Token Discipline + Auto-prod** — Bounded debate with scope gate, round cap, convergence detection, request-only auto-prod, and debate-close summary.
 - [ ] **Phase 5: Governance Layer** — Impasse classification, domain routing, human escalation, flywheel encoding, governance summaries, updatable role boundaries.
@@ -29,7 +29,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [~] 01-03-PLAN.md — Wiring + dogfood gate: SETUP.md, .gitignore, both agents wire in, stack positions posted *(auto-tasks done; checkpoints pending: Claude verify + Codex dogfood)*
+- [x] 01-03-PLAN.md - Wiring + dogfood gate: SETUP.md, .gitignore, both agents wire in, stack positions posted
 
 **Decision Gate — Tech Stack (MUST resolve before implementation begins):**
 
@@ -68,6 +68,17 @@ Plans:
 **Goal**: Complete async board (ack, reply, list). Every thread carries a tiered battle card. Role definitions for both agents are readable from the board.
 **Depends on**: Phase 1
 **Requirements**: BOARD-03, BOARD-04, BOARD-05, CARD-01, CARD-02, CARD-03, ROLES-01, ROLES-02
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [x] 02-01-PLAN.md - Store/schema board mechanics: ack records, structural replies, enriched thread reads, open-thread listing
+- [x] 02-02-PLAN.md - Battle cards and roles: deterministic lean card, append-only proving envelopes, board-readable role definitions
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 02-03-PLAN.md - FastMCP tool wiring and dogfood: ack_message, reply_message, get_battle_card, append_proving_envelope
 
 **Additional MCP (Phase 2):**
 
@@ -152,8 +163,8 @@ Plans:
 
 | Phase | Requirements | Status |
 |-------|-------------|--------|
-| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | Checkpoint pending (01-03 auto-tasks done; dogfood gate pending) |
-| 2. Full Board + Battle Cards + Roles | BOARD-03–05, CARD-01–03, ROLES-01–02 | Not started |
+| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | Complete |
+| 2. Full Board + Battle Cards + Roles | BOARD-03–05, CARD-01–03, ROLES-01–02 | Complete |
 | 3. Structured Dissent + Response Windows | DISSENT-01–03 | Not started |
 | 4. Debate Protocol + Token Discipline | DEBATE-01–05, TOKEN-01–03 | Not started |
 | 5. Governance Layer | IMPASSE-01–04, SUMMARY-01–02, ROLES-03 | Not started |

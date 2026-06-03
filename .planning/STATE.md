@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: phase-complete
-last_updated: "2026-06-03T13:00:00Z"
+last_updated: "2026-06-03T14:15:00Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 20
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 40
 ---
 
 # State — BMG-Harmony v1
@@ -18,17 +18,17 @@ progress:
 
 **Core value**: Two agents, one coherent team — shared async board, durable battle cards, bounded debate with structured dissent, and a governance loop that learns from impasses.
 
-**Current focus**: Phase 1 — Decision Gate + Shared Store
+**Current focus**: Phase 2 - Full Board + Battle Cards + Roles COMPLETE; next phase not started
 
 ---
 
 ## Current Position
 
-Phase: 01 (decision-gate-shared-store) — COMPLETE
+Phase: 02 (full-board-battle-cards-roles) - COMPLETE
 Plan: 3 of 3
-**Phase**: 1 — Decision Gate + Shared Store
-**Status**: COMPLETE — both agents on board, dogfood gate passed
-**Progress**: [##########] 100% Phase 1 done; Phase 2 ready to start
+**Phase**: 2 - Full Board + Battle Cards + Roles
+**Status**: COMPLETE - implementation validated, live dogfood checkpoint receipted, ready for commit/push
+**Progress**: [##########] 100% Phase 2 complete
 
 ---
 
@@ -37,18 +37,18 @@ Plan: 3 of 3
 | Phase | Status | Completed |
 |-------|--------|-----------|
 | 1. Decision Gate + Shared Store | COMPLETE | 01-01, 01-02, 01-03 |
-| 2. Full Message Board + Battle Cards | Not started | - |
-| 3. Debate Protocol + Token Discipline | Not started | - |
-| 4. Structured Dissent | Not started | - |
+| 2. Full Message Board + Battle Cards | COMPLETE | 02-01, 02-02, 02-03 |
+| 3. Structured Dissent + Response Windows | Not started | - |
+| 4. Debate Protocol + Token Discipline | Not started | - |
 | 5. Governance Layer | Not started | - |
 
 ---
 
 ## Performance Metrics
 
-- Phases complete: 0/5
-- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02 — delivered in 01-01/01-02; wiring done in 01-03)
-- Phases with plans: 1/5
+- Phases complete: 1/5
+- Requirements delivered: 12/28 (BOARD-01 through BOARD-05, POS-01, POS-02, CARD-01 through CARD-03, ROLES-01, ROLES-02 implemented and test-validated; Phase 2 dogfood still pending)
+- Phases with plans: 2/5
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -88,12 +88,13 @@ Plan: 3 of 3
 
 ### Todos
 
-- Start Phase 2: Full Message Board + Battle Cards (`$gsd-execute-phase 2`)
+- Commit and push Phase 2 closeout.
+- Next planning route after publish: `$gsd-plan-phase 3`.
 
 ---
 
 ## Session Continuity
 
-**Last updated**: 2026-06-03T13:00:00Z
-**Stopped at**: Phase 1 complete — both agents on board, dogfood gate passed (harmony-stack-decision: 2 events, claude + codex). SETUP.md corrected (config path + PYTHONPATH). Claude Code restart required to load updated .mcp.json.
-**Next action**: Restart Claude Code → verify bmg-harmony in tool list → start Phase 2
+**Last updated**: 2026-06-03T14:15:00Z
+**Stopped at**: Phase 2 complete. Codex acked Claude's Phase 1 stack-position message (`ack_id=019e8dd3-fca3-7072-ad4d-9e44f98a8422`) and appended Codex proving envelope (`envelope_id=019e8dd3-fca8-71a1-b5ae-27689ba240ea`).
+**Next action**: Commit and push Phase 2. After publish, start Phase 3 planning with `$gsd-plan-phase 3` when ready.

@@ -43,10 +43,14 @@ from mcp.server.fastmcp.exceptions import ToolError  # verified: mcp 1.27.x
 # Store layer imports
 # ---------------------------------------------------------------------------
 from server.store import (
+    ack_message as _ack_message,
+    append_proving_envelope as _append_proving_envelope,
+    get_battle_card as _get_battle_card,
     init_db,
-    write_event,
-    read_thread as _read_thread,
     list_threads as _list_threads,
+    read_thread as _read_thread,
+    reply_message as _reply_message,
+    write_event,
 )
 
 # ---------------------------------------------------------------------------
@@ -137,6 +141,56 @@ def list_threads(state: str | None = None) -> dict:
     created_at, state.
     """
     return {"threads": _list_threads(_db, state)}
+
+
+@mcp.tool()
+def ack_message(message_id: str, agent_id: str) -> dict:
+    """Acknowledge delivery of a message for an agent."""
+    return _ack_message(_db, message_id, agent_id)
+
+
+@mcp.tool()
+def reply_message(
+    thread_id: str,
+    parent_message_id: str,
+    agent_id: str,
+    kind: str,
+    content_md: str,
+) -> dict:
+    """Post a reply linked to a parent message in the same thread."""
+    return _reply_message(
+        _db,
+        thread_id=thread_id,
+        parent_message_id=parent_message_id,
+        agent_id=agent_id,
+        kind=kind,
+        content_md=content_md,
+    )
+
+
+@mcp.tool()
+def get_battle_card(thread_id: str) -> dict:
+    """Return a deterministic lean battle card for a thread."""
+    return _get_battle_card(_db, thread_id)
+
+
+@mcp.tool()
+def append_proving_envelope(
+    thread_id: str,
+    agent_id: str,
+    proved: str,
+    not_checked: str,
+    confidence: float,
+) -> dict:
+    """Append a proving-intent envelope to a thread."""
+    return _append_proving_envelope(
+        _db,
+        thread_id=thread_id,
+        agent_id=agent_id,
+        proved=proved,
+        not_checked=not_checked,
+        confidence=confidence,
+    )
 
 
 @mcp.tool()
