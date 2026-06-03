@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: checkpoint-pending
-last_updated: "2026-06-03T12:15:00Z"
+status: phase-complete
+last_updated: "2026-06-03T13:00:00Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 33
+  completed_plans: 3
+  percent: 20
 ---
 
 # State — BMG-Harmony v1
@@ -24,12 +24,11 @@ progress:
 
 ## Current Position
 
-Phase: 01 (decision-gate-shared-store) — CHECKPOINT PENDING
-Plan: 3 of 3 (auto-tasks complete; awaiting human verification + Codex dogfood)
+Phase: 01 (decision-gate-shared-store) — COMPLETE
+Plan: 3 of 3
 **Phase**: 1 — Decision Gate + Shared Store
-**Plan**: 01-03 auto-tasks COMPLETE — awaiting checkpoints 3 and 4
-**Status**: Checkpoint pending (human-verify: Claude wiring + Codex dogfood gate)
-**Progress**: [#####-----] 33% (2.5/3 plans — 01-03 auto-tasks done, checkpoints pending)
+**Status**: COMPLETE — both agents on board, dogfood gate passed
+**Progress**: [##########] 100% Phase 1 done; Phase 2 ready to start
 
 ---
 
@@ -37,7 +36,7 @@ Plan: 3 of 3 (auto-tasks complete; awaiting human verification + Codex dogfood)
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Decision Gate + Shared Store | Checkpoint pending (01-03 auto-tasks done) | 01-01, 01-02, 01-03 (partial) |
+| 1. Decision Gate + Shared Store | COMPLETE | 01-01, 01-02, 01-03 |
 | 2. Full Message Board + Battle Cards | Not started | - |
 | 3. Debate Protocol + Token Discipline | Not started | - |
 | 4. Structured Dissent | Not started | - |
@@ -89,15 +88,12 @@ Plan: 3 of 3 (auto-tasks complete; awaiting human verification + Codex dogfood)
 
 ### Todos
 
-- Human: run `claude mcp list` to verify bmg-harmony is visible (Task 3 checkpoint)
-- Codex: add [mcp_servers.bmg-harmony] to config.toml per SETUP.md Section 4
-- Codex: call post_stack_position in its session (Task 4 dogfood gate)
-- After dogfood gate passes: run full pytest suite (8 tests), confirm DOGFOOD GATE: PASSED
+- Start Phase 2: Full Message Board + Battle Cards (`$gsd-execute-phase 2`)
 
 ---
 
 ## Session Continuity
 
-**Last updated**: 2026-06-03T12:15:00Z
-**Stopped at**: 01-03 auto-tasks complete — awaiting Task 3 (Claude wiring verification) and Task 4 (Codex dogfood gate)
-**Next action**: Human: `claude mcp list` to verify bmg-harmony | Codex: wire config.toml + post_stack_position
+**Last updated**: 2026-06-03T13:00:00Z
+**Stopped at**: Phase 1 complete — both agents on board, dogfood gate passed (harmony-stack-decision: 2 events, claude + codex). SETUP.md corrected (config path + PYTHONPATH). Claude Code restart required to load updated .mcp.json.
+**Next action**: Restart Claude Code → verify bmg-harmony in tool list → start Phase 2

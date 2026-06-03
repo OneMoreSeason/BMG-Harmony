@@ -82,14 +82,10 @@ Note: The CLI method may not support env vars directly. If `HARMONY_DB_PATH` is 
 
 ## Section 4: Codex Wiring
 
-Codex reads MCP server config from `config.toml`. The user-level config is at:
-`C:/Users/thepo/AppData/Roaming/.codex/config.toml`
+Codex reads MCP server config from `config.toml`. The actual user-level config path on this machine is:
+`C:/Users/thepo/.codex/config.toml`
 
-Verify your Codex config path first:
-```
-codex --help
-```
-or check if `C:/Users/thepo/AppData/Roaming/.codex/config.toml` exists.
+> **Note:** SETUP.md originally documented `C:/Users/thepo/AppData/Roaming/.codex/config.toml` — that path does not exist on this machine. Codex confirmed the real path is `~/.codex/config.toml` during dogfood wiring (2026-06-03).
 
 Add this section to `config.toml` (forward slashes work in TOML on Windows):
 
@@ -97,8 +93,10 @@ Add this section to `config.toml` (forward slashes work in TOML on Windows):
 [mcp_servers.bmg-harmony]
 command = "C:/Users/thepo/AppData/Local/Programs/Python/Python313/python.exe"
 args = ["C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony/server/harmony_server.py"]
-env = { HARMONY_DB_PATH = "C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony/.harmony/store/harmony.sqlite" }
+env = { HARMONY_DB_PATH = "C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony/.harmony/store/harmony.sqlite", PYTHONPATH = "C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony" }
 ```
+
+> **Note:** `PYTHONPATH` is required when launching `server/harmony_server.py` by absolute path — without it Python can't resolve the `server` package import. Confirmed during dogfood wiring (2026-06-03).
 
 After saving, verify in Codex:
 ```
