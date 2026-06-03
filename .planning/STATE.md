@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-last_updated: "2026-06-02T22:45:00Z"
+status: checkpoint-pending
+last_updated: "2026-06-03T12:15:00Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
   completed_plans: 2
-  percent: 20
+  percent: 33
 ---
 
 # State — BMG-Harmony v1
@@ -24,12 +24,12 @@ progress:
 
 ## Current Position
 
-Phase: 01 (decision-gate-shared-store) — EXECUTING
-Plan: 3 of 3
+Phase: 01 (decision-gate-shared-store) — CHECKPOINT PENDING
+Plan: 3 of 3 (auto-tasks complete; awaiting human verification + Codex dogfood)
 **Phase**: 1 — Decision Gate + Shared Store
-**Plan**: 01-02 COMPLETE — moving to 01-03
-**Status**: In progress
-**Progress**: [####------] 20% (2 of 3 plans in phase 1 complete)
+**Plan**: 01-03 auto-tasks COMPLETE — awaiting checkpoints 3 and 4
+**Status**: Checkpoint pending (human-verify: Claude wiring + Codex dogfood gate)
+**Progress**: [#####-----] 33% (2.5/3 plans — 01-03 auto-tasks done, checkpoints pending)
 
 ---
 
@@ -37,7 +37,7 @@ Plan: 3 of 3
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Decision Gate + Shared Store | In progress (2/3 plans) | 01-01, 01-02 |
+| 1. Decision Gate + Shared Store | Checkpoint pending (01-03 auto-tasks done) | 01-01, 01-02, 01-03 (partial) |
 | 2. Full Message Board + Battle Cards | Not started | - |
 | 3. Debate Protocol + Token Discipline | Not started | - |
 | 4. Structured Dissent | Not started | - |
@@ -48,13 +48,14 @@ Plan: 3 of 3
 ## Performance Metrics
 
 - Phases complete: 0/5
-- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02 — all delivered in 01-01; MCP server delivering them in 01-02)
+- Requirements delivered: 4/28 (BOARD-01, BOARD-02, POS-01, POS-02 — delivered in 01-01/01-02; wiring done in 01-03)
 - Phases with plans: 1/5
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 01 | 01 | 15min | 2 | 9 |
 | 01 | 02 | 15min | 1 | 1 |
+| 01 | 03 | 20min | 2 auto + 2 checkpoints | 4 |
 
 ---
 
@@ -74,6 +75,9 @@ Plan: 3 of 3
 | ToolError import path | mcp.server.fastmcp.exceptions.ToolError (not mcp.server.fastmcp.ToolError — that path does not exist in 1.27.x) | Locked |
 | revision = last_insert_rowid() | Monotonically increasing per table; no extra query; debuggable | Locked |
 | Thread auto-create via INSERT OR IGNORE | Idempotent; handles concurrent first-posts without race | Locked |
+| .gitignore uses glob .harmony/store/* | Allows .gitkeep to be tracked via negation rule (!.harmony/store/.gitkeep) | Locked |
+| bmg-harmony in project-scope .mcp.json | Added to .codex/.mcp.json (project scope); user-scope requires CLI (documented in SETUP.md) | Locked |
+| Claude stack position posted via store layer | Executor agent lacks active MCP session; wrote directly via write_event(); identical data | Locked |
 
 ### Open Questions
 
@@ -85,12 +89,15 @@ Plan: 3 of 3
 
 ### Todos
 
-- Execute 01-03-PLAN.md (SETUP.md, .gitignore, agent wiring, dogfood gate)
+- Human: run `claude mcp list` to verify bmg-harmony is visible (Task 3 checkpoint)
+- Codex: add [mcp_servers.bmg-harmony] to config.toml per SETUP.md Section 4
+- Codex: call post_stack_position in its session (Task 4 dogfood gate)
+- After dogfood gate passes: run full pytest suite (8 tests), confirm DOGFOOD GATE: PASSED
 
 ---
 
 ## Session Continuity
 
-**Last updated**: 2026-06-02T22:45:00Z
-**Stopped at**: Completed 01-02-PLAN.md — harmony_server.py with all 4 MCP tools
-**Next action**: Execute 01-03-PLAN.md (SETUP.md, .gitignore, agent wiring, dogfood gate)
+**Last updated**: 2026-06-03T12:15:00Z
+**Stopped at**: 01-03 auto-tasks complete — awaiting Task 3 (Claude wiring verification) and Task 4 (Codex dogfood gate)
+**Next action**: Human: `claude mcp list` to verify bmg-harmony | Codex: wire config.toml + post_stack_position

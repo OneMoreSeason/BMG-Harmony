@@ -29,7 +29,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-03-PLAN.md — Wiring + dogfood gate: SETUP.md, .gitignore, both agents wire in, stack positions posted
+- [~] 01-03-PLAN.md — Wiring + dogfood gate: SETUP.md, .gitignore, both agents wire in, stack positions posted *(auto-tasks done; checkpoints pending: Claude verify + Codex dogfood)*
 
 **Decision Gate — Tech Stack (MUST resolve before implementation begins):**
 
@@ -152,7 +152,7 @@ Plans:
 
 | Phase | Requirements | Status |
 |-------|-------------|--------|
-| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | In progress (2/3 plans) |
+| 1. Decision Gate + Shared Store | BOARD-01, BOARD-02, POS-01, POS-02 | Checkpoint pending (01-03 auto-tasks done; dogfood gate pending) |
 | 2. Full Board + Battle Cards + Roles | BOARD-03–05, CARD-01–03, ROLES-01–02 | Not started |
 | 3. Structured Dissent + Response Windows | DISSENT-01–03 | Not started |
 | 4. Debate Protocol + Token Discipline | DEBATE-01–05, TOKEN-01–03 | Not started |
