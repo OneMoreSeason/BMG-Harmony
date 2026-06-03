@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/mcp.json",
+  "mcpServers": {
+    "bmg-harmony": {
+      "command": "C:\\Users\\thepo\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "args": ["C:\\Users\\thepo\\OneDrive\\Documents\\GitHub\\BMG-Harmony\\server\\harmony_server.py"],
+      "env": {
+        "HARMONY_DB_PATH": "C:\\Users\\thepo\\OneDrive\\Documents\\GitHub\\BMG-Harmony\\.harmony\\store\\harmony.sqlite",
+        "PYTHONPATH": "C:\\Users\\thepo\\OneDrive\\Documents\\GitHub\\BMG-Harmony"
+      },
+      "description": "BMG-Harmony shared board (worker-scoped: board access only, least privilege)"
+    }
+  }
+}
