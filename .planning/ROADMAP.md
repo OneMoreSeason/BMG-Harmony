@@ -103,6 +103,17 @@ Plans:
 **Goal**: Full dissent UX. Silence means agreement only after delivery confirmed + response window elapsed. Dissent records travel with battle cards.
 **Depends on**: Phase 2
 **Requirements**: DISSENT-01, DISSENT-02, DISSENT-03
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md - Structured dissent records: category validation and `file_dissent` store operation
+- [ ] 03-02-PLAN.md - Delivery confirmation and response-window state machine
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-03-PLAN.md - FastMCP tool wiring, battle-card visibility, and dogfood
 
 **Additional MCP (Phase 3):**
 
