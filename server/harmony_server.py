@@ -45,6 +45,8 @@ from mcp.server.fastmcp.exceptions import ToolError  # verified: mcp 1.27.x
 from server.store import (
     ack_message as _ack_message,
     append_proving_envelope as _append_proving_envelope,
+    confirm_delivery as _confirm_delivery,
+    file_dissent as _file_dissent,
     get_battle_card as _get_battle_card,
     init_db,
     list_threads as _list_threads,
@@ -191,6 +193,35 @@ def append_proving_envelope(
         not_checked=not_checked,
         confidence=confidence,
     )
+
+
+@mcp.tool()
+def file_dissent(
+    thread_id: str,
+    agent_id: str,
+    category: str,
+    content_md: str,
+) -> dict:
+    """File a typed dissent record on a thread.
+
+    category must be one of: technical, doctrine, scope.
+    Validation fails before any store mutation on invalid category.
+    Returns event receipt with event_id, thread_id, revision, timestamp,
+    validation_status.
+    """
+    return _file_dissent(_db, thread_id=thread_id, agent_id=agent_id,
+                         category=category, content_md=content_md)
+
+
+@mcp.tool()
+def confirm_delivery(message_id: str, agent_id: str) -> dict:
+    """Explicit delivery confirmation for response-window consent rules.
+
+    Before confirmation, silence is no_response — not consent.
+    After confirmation, the response window begins. Idempotent per
+    message/agent pair. Returns ack receipt with delivery_confirmed=True.
+    """
+    return _confirm_delivery(_db, message_id=message_id, agent_id=agent_id)
 
 
 @mcp.tool()

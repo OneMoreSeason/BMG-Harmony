@@ -3,12 +3,17 @@
 import json
 import os
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from jsonschema import ValidationError
 from uuid_utils import uuid7
 
-from server.schema import validate_ack, validate_event, validate_proving_envelope
+from server.schema import (
+    validate_ack,
+    validate_dissent_payload,
+    validate_event,
+    validate_proving_envelope,
+)
 
 # Try to import the real ToolError from mcp; fall back to a local definition
 # so this module is usable without the MCP server running (e.g. in tests).
@@ -39,6 +44,8 @@ ROLE_DEFINITIONS = {
         "default_route_for": ["implementation", "runtime"],
     },
 }
+
+DEFAULT_RESPONSE_WINDOW_HOURS: float = 24.0
 
 ROLE_AUTHORITY_NOTE = (
     "Role authority is domain-partitioned, not hierarchical. User instruction, "
@@ -191,6 +198,109 @@ def ack_message(con: sqlite3.Connection, message_id: str, agent_id: str) -> dict
     }
 
 
+def file_dissent(
+    con: sqlite3.Connection,
+    thread_id: str,
+    agent_id: str,
+    category: str,
+    content_md: str,
+) -> dict:
+    """File a typed dissent record on a thread.
+
+    category must be one of: technical, doctrine, scope.
+    Validation fails before any store mutation on invalid category.
+    Returns the standard event receipt.
+    """
+    try:
+        validate_dissent_payload({"category": category})
+    except Exception as exc:
+        raise ToolError(f"Dissent validation failed: {exc}") from exc
+
+    return write_event(
+        con,
+        {
+            "thread_id": thread_id,
+            "agent_id": agent_id,
+            "kind": "dissent",
+            "content_md": content_md,
+            "payload_json": json.dumps({"category": category}),
+        },
+    )
+
+
+def confirm_delivery(
+    con: sqlite3.Connection,
+    message_id: str,
+    agent_id: str,
+) -> dict:
+    """Explicit delivery confirmation for response-window consent rules.
+
+    Delegates to ack_message — one source of truth for delivery receipts.
+    Before confirmation, silence is no_response. After confirmation, the
+    response window begins. Returns the ack receipt with delivery_confirmed=True.
+    """
+    receipt = ack_message(con, message_id, agent_id)
+    receipt["delivery_confirmed"] = True
+    return receipt
+
+
+def response_window_status(
+    con: sqlite3.Connection,
+    dissent_event_id: str,
+    now: datetime | None = None,
+) -> dict:
+    """Compute the response-window state for a dissent event.
+
+    States:
+      no_response       — no delivery confirmation exists yet
+      pending           — delivered but response window has not elapsed
+      agreement_by_silence — delivered and window elapsed with no dissent reply
+
+    Accepts an injectable *now* for deterministic testing.
+    """
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    row = con.execute(
+        "SELECT event_id, payload_json FROM events WHERE event_id=? AND kind='dissent'",
+        (dissent_event_id,),
+    ).fetchone()
+    if row is None:
+        raise ToolError(f"Dissent event not found: {dissent_event_id}")
+
+    payload = json.loads(row[1]) if row[1] else {}
+    window_hours = float(payload.get("response_window_hours", DEFAULT_RESPONSE_WINDOW_HOURS))
+
+    ack_row = con.execute(
+        "SELECT delivered_at FROM message_acks WHERE message_id=? ORDER BY rowid ASC LIMIT 1",
+        (dissent_event_id,),
+    ).fetchone()
+
+    if ack_row is None:
+        return {
+            "dissent_event_id": dissent_event_id,
+            "status": "no_response",
+            "delivery_confirmed": False,
+            "window_hours": window_hours,
+            "response_deadline": None,
+        }
+
+    delivered_at_str = ack_row[0]
+    delivered_at = datetime.fromisoformat(delivered_at_str)
+    if delivered_at.tzinfo is None:
+        delivered_at = delivered_at.replace(tzinfo=timezone.utc)
+    deadline = delivered_at + timedelta(hours=window_hours)
+
+    return {
+        "dissent_event_id": dissent_event_id,
+        "status": "pending" if now < deadline else "agreement_by_silence",
+        "delivery_confirmed": True,
+        "delivered_at": delivered_at_str,
+        "window_hours": window_hours,
+        "response_deadline": deadline.isoformat(),
+    }
+
+
 def reply_message(
     con: sqlite3.Connection,
     thread_id: str,
@@ -336,11 +446,20 @@ def get_battle_card(con: sqlite3.Connection, thread_id: str) -> dict:
     envelope_count = _envelope_count(con, thread_id)
     latest_envelopes = _latest_envelopes(con, thread_id)
 
+    latest_dissents = _latest_dissents(con, thread_id)
+
     open_flags = []
     if unacked_count:
         open_flags.append("unacked_messages")
     if dissent_count:
-        open_flags.append("dissent_present")
+        undelivered = [d for d in latest_dissents if d["window_status"] == "no_response"]
+        pending = [d for d in latest_dissents if d["window_status"] == "pending"]
+        if undelivered:
+            open_flags.append("undelivered_dissent")
+        elif pending:
+            open_flags.append("dissent_response_pending")
+        else:
+            open_flags.append("dissent_present")
     if latest_event is not None and envelope_count == 0:
         open_flags.append("missing_proving_envelope")
 
@@ -353,6 +472,7 @@ def get_battle_card(con: sqlite3.Connection, thread_id: str) -> dict:
         "latest_event": latest_event,
         "unacked_count": int(unacked_count),
         "dissent_count": int(dissent_count),
+        "latest_dissents": latest_dissents,
         "envelope_count": int(envelope_count),
         "latest_envelopes": latest_envelopes,
     }
@@ -505,6 +625,40 @@ def _latest_envelopes(con: sqlite3.Connection, thread_id: str) -> list[dict]:
         "confidence",
     ]
     return [dict(zip(keys, row)) for row in cur.fetchall()]
+
+
+def _latest_dissents(
+    con: sqlite3.Connection,
+    thread_id: str,
+    now: datetime | None = None,
+) -> list[dict]:
+    """Return the latest dissent events with compact response-window state."""
+    cur = con.execute(
+        "SELECT event_id, agent_id, timestamp, payload_json"
+        " FROM events WHERE thread_id=? AND kind='dissent' ORDER BY rowid DESC LIMIT 3",
+        (thread_id,),
+    )
+    result = []
+    for event_id, agent_id, timestamp, payload_json in cur.fetchall():
+        payload = json.loads(payload_json) if payload_json else {}
+        try:
+            ws = response_window_status(con, event_id, now=now)
+            window_status = ws["status"]
+            response_deadline = ws.get("response_deadline")
+        except Exception:
+            window_status = "unknown"
+            response_deadline = None
+        result.append(
+            {
+                "event_id": event_id,
+                "agent_id": agent_id,
+                "timestamp": timestamp,
+                "category": payload.get("category"),
+                "window_status": window_status,
+                "response_deadline": response_deadline,
+            }
+        )
+    return result
 
 
 def _read_roles(con: sqlite3.Connection) -> list[dict]:

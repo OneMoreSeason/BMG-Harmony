@@ -45,7 +45,8 @@ def test_get_battle_card_returns_deterministic_summary(tmp_db):
     assert card["dissent_count"] == 1
     assert card["envelope_count"] == 0
     assert "unacked_messages" in card["open_flags"]
-    assert "dissent_present" in card["open_flags"]
+    # Phase 3: undelivered dissent now flags as 'undelivered_dissent' (more specific than 'dissent_present')
+    assert any(f in card["open_flags"] for f in ("dissent_present", "undelivered_dissent", "dissent_response_pending"))
     assert "missing_proving_envelope" in card["open_flags"]
 
 

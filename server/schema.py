@@ -2,6 +2,16 @@
 
 from jsonschema import Draft7Validator
 
+DISSENT_PAYLOAD_SCHEMA: dict = {
+    "type": "object",
+    "required": ["category"],
+    "properties": {
+        "category": {"type": "string", "enum": ["technical", "doctrine", "scope"]},
+        "response_window_hours": {"type": "number", "minimum": 0.0},
+    },
+    "additionalProperties": False,
+}
+
 EVENT_SCHEMA: dict = {
     "type": "object",
     "required": ["event_id", "thread_id", "agent_id", "kind", "timestamp", "content_md"],
@@ -53,9 +63,15 @@ PROVING_ENVELOPE_SCHEMA: dict = {
     "additionalProperties": False,
 }
 
+_dissent_payload_validator = Draft7Validator(DISSENT_PAYLOAD_SCHEMA)
 _event_validator = Draft7Validator(EVENT_SCHEMA)
 _ack_validator = Draft7Validator(ACK_SCHEMA)
 _proving_envelope_validator = Draft7Validator(PROVING_ENVELOPE_SCHEMA)
+
+
+def validate_dissent_payload(payload: dict) -> None:
+    """Validate a dissent payload dict — category must be technical, doctrine, or scope."""
+    _dissent_payload_validator.validate(payload)
 
 
 def validate_event(event: dict) -> None:
