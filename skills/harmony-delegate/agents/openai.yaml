@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harmony delegation"
+  short_description: "Assign scoped work to Claude Code and verify results"
+  default_prompt: "Use $harmony-delegate to assign a scoped task to Claude and verify its result."

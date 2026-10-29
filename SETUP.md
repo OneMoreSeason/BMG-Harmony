@@ -1,3 +1,10 @@
+# Current delegation entry point
+
+For bounded Claude Code delegation, use [bridge/README.md](bridge/README.md).
+The wiring/phase receipts below are historical installation guidance, not proof
+that a current CLI is authenticated or a worker is ready. Do not repeat the old
+stack-position dogfood posts as part of routine startup.
+
 # BMG-Harmony Setup Guide
 
 This guide wires both Claude Code and Codex into the BMG-Harmony MCP server.
@@ -7,7 +14,7 @@ Copy-paste the config fragments for your agent and follow the verification steps
 
 ## Section 1: Prerequisites
 
-All dependencies are already installed on this machine.
+Verify the named runtime/dependencies on the current machine before relying on them.
 
 | Dependency | Path / Command | Status |
 |------------|---------------|--------|
@@ -164,7 +171,7 @@ cd "C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony"
 "C:/Users/thepo/AppData/Local/Programs/Python/Python313/python.exe" -m pytest tests/ -v
 ```
 
-Expected: All 8 tests pass (test_store.py x7, test_cold_open.py x1).
+Run the current suite; the original eight-test count is historical. Delegation tests use owned temporary boards and workspaces.
 
 For just the cold-open proof:
 ```powershell
@@ -180,5 +187,5 @@ For just the cold-open proof:
 | `HARMONY_DB_PATH environment variable is not set` | Env var missing from MCP config | Add `env` block to `.mcp.json` with double-backslash paths |
 | `bmg-harmony` not in `claude mcp list` | Config file not saved / JSON invalid | Validate JSON: `python -c "import json, pathlib; json.loads(pathlib.Path('C:/Users/thepo/OneDrive/Documents/GitHub/.codex/.mcp.json').read_text()); print('OK')"` |
 | `bmg-harmony` shows `failed` in `claude mcp list` | Python or server path wrong | Check both paths exist: `Test-Path "C:\Users\thepo\AppData\Local\Programs\Python\Python313\python.exe"` |
-| `bmg-harmony` not in Codex `/mcp` | TOML syntax error or wrong file path | Open `C:/Users/thepo/AppData/Roaming/.codex/config.toml` and verify the `[mcp_servers.bmg-harmony]` section is well-formed |
+| `bmg-harmony` not in Codex `/mcp` | TOML syntax error or wrong file path | Open `C:/Users/thepo/.codex/config.toml` and verify the `[mcp_servers.bmg-harmony]` section is well-formed |
 | Store file not created | `.harmony/store/` directory missing | Create: `New-Item -ItemType Directory -Path "C:\Users\thepo\OneDrive\Documents\GitHub\BMG-Harmony\.harmony\store" -Force` |
