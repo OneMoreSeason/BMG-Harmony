@@ -17,8 +17,8 @@
     * Kill-switch   — operator drops the kill file; immediate halt.
 
   SAFETY: default sandbox is --full-auto (workspace-write), with the harmony store added
-  as a writable root so board posts work. Real network pushes may need -FullAccess
-  (--dangerously-bypass-approvals-and-sandbox); under the safe default, a blocked push is
+  as a writable root so board posts work. Publication belongs to the parent supervisor; FullAccess is retired.
+  Under the sandbox, a blocked push is
   recorded as INCOMPLETE per UAE doctrine, which is the correct behavior, not a failure.
 
   Example:
@@ -48,11 +48,11 @@ if (-not (Test-Path $WorkDir)) { throw "WorkDir not found: $WorkDir" }
 $harmonyStore = "C:/Users/thepo/OneDrive/Documents/GitHub/BMG-Harmony/.harmony/store"
 $logDir = Join-Path $env:TEMP ("codex-conductor-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-if (Test-Path $KillSwitch) { Remove-Item $KillSwitch -Force }  # clear stale kill file
+if (Test-Path -LiteralPath $KillSwitch) { throw "Kill switch present; it has not been removed: $KillSwitch" }
 
-# Sandbox posture
+# Bounded sandbox posture; no blanket bypass
 if ($FullAccess) {
-  $sandboxArgs = @("--dangerously-bypass-approvals-and-sandbox")
+  throw "FullAccess is retired. Use scoped workspace permissions and parent-owned publication."
 } else {
   # TOML literal (single-quoted) string so the value carries no double-quotes that would
   # break native argument passing on PowerShell.
@@ -124,6 +124,8 @@ try {
     # Redirect stdout/stderr to SEPARATE files (never 2>&1 — that wraps native stderr in
     # ErrorRecords on PS 5.1). stdin carries the prompt via the trailing `-` arg.
     $prompt | & $codex @cArgs 1> $outFile 2> $errFile
+    $turnExit = $LASTEXITCODE
+    if ($turnExit -ne 0) { $final = "HALT: codex exit $turnExit"; break }
     Get-Content -Path $outFile, $errFile -ErrorAction SilentlyContinue | Set-Content -Path $turnLog
     $stdoutText = Get-Content -Path $outFile -Raw -ErrorAction SilentlyContinue
     if ($stdoutText) { Write-Host $stdoutText }
@@ -134,8 +136,9 @@ try {
       $sentinel = Select-String -Path $errFile -Pattern '^\s*(UAE-CLOSEOUT|UAE-HALT|UAE-CONTINUE):' -ErrorAction SilentlyContinue | Select-Object -Last 1
     }
     if (-not $sentinel) {
-      Write-Host "[turn $turn] no sentinel emitted; treating as CONTINUE."
-      continue
+      Write-Host "[turn $turn] no sentinel emitted; halting for inspection."
+      $final = "HALT: missing sentinel"
+      break
     }
     $line = $sentinel.Line.Trim()
     Write-Host "[turn $turn] sentinel: $line"

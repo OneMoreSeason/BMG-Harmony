@@ -1,89 +1,64 @@
 <#
-  claude-worker.ps1 — Safe headless Claude worker for the BMG-Harmony reverse bridge.
-
-  Purpose: let a SUPERVISOR (e.g. Codex) delegate a task to Claude non-interactively
-  and read the result. This is the mirror image of Claude driving `codex exec`.
-
-  Safety posture (safe + sustainable by design):
-    * --strict-mcp-config + minimal harmony.mcp.json  => ONLY the shared board is exposed.
-      None of Claude's other MCP organelles (desktop-ops, blender, godot, yantrikdb) are loaded.
-    * --allowedTools whitelist                         => explicit allow-list, NOT a blanket
-      permission bypass. Dangerous tools are simply unavailable.
-    * Isolated working directory                        => file work stays in a scratch dir,
-      not the caller's repo, unless the caller overrides -WorkDir.
-
-  Usage:
-    powershell -ExecutionPolicy Bypass -File claude-worker.ps1 -Prompt "your task here"
-    powershell -ExecutionPolicy Bypass -File claude-worker.ps1 -Prompt "..." -WorkDir "C:\path\to\repo" -AllowBash
-
-  Returns: Claude's final response on stdout (text by default).
+  Compatibility entry point for explicit, bounded Harmony tasks.
+  Default: review only. No Bash, permission bypass, or app control.
+  Use -TaskFile for the formal task contract; -Prompt creates a one-off review.
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Prompt')]
 param(
-  # Either -Prompt (inline string, fine for short prompts) or -PromptFile (path to a
-  # UTF-8 text file containing the prompt — required for long/multi-line prompts passed
-  # from Python subprocess to avoid list2cmdline quoting corruption).
-  [string]$Prompt,
-  [string]$PromptFile,
-
-  # Where the worker is allowed to do file work. Defaults to an out-of-repo scratch dir.
-  [string]$WorkDir = (Join-Path $env:TEMP "harmony-worker"),
-
-  # Tool allow-list. Board tools + read/write/edit by default. Bash is opt-in via -AllowBash.
-  [string[]]$AllowedTools = @(
-    "mcp__bmg-harmony__post_message",
-    "mcp__bmg-harmony__read_thread",
-    "mcp__bmg-harmony__list_threads",
-    "mcp__bmg-harmony__ack_message",
-    "mcp__bmg-harmony__reply_message",
-    "mcp__bmg-harmony__get_battle_card",
-    "mcp__bmg-harmony__append_proving_envelope",
-    "Read", "Write", "Edit"
-  ),
-
-  # Add Bash to the allow-list (needed for build/test tasks; off by default for safety).
+  [Parameter(Mandatory = $true, ParameterSetName = 'Task')][string]$TaskFile,
+  [Parameter(Mandatory = $true, ParameterSetName = 'Prompt')][string]$Prompt,
+  [Parameter(Mandatory = $true, ParameterSetName = 'PromptFile')][string]$PromptFile,
+  [string]$WorkDir = (Join-Path $env:TEMP 'harmony-worker'),
+  [ValidateSet('review','implement')][string]$Mode = 'review',
+  [string[]]$AllowedFiles = @(),
+  [string]$Model,
+  [string]$ClaudePath,
+  [ValidateSet('text','json')][string]$OutputFormat = 'json',
+  [ValidateRange(1,3600)][int]$TimeoutSeconds = 600,
   [switch]$AllowBash,
-
-  [ValidateSet("text", "json", "stream-json")]
-  [string]$OutputFormat = "text",
-
-  [string]$Model
+  [string[]]$AllowedTools
 )
-
-$ErrorActionPreference = "Stop"
-
-$claude = Join-Path $env:APPDATA "npm\claude.cmd"
-if (-not (Test-Path $claude)) { throw "claude CLI not found at $claude (run: npm install -g @anthropic-ai/claude-code)" }
-
-$mcp = Join-Path $PSScriptRoot "harmony.mcp.json"
-if (-not (Test-Path $mcp)) { throw "harmony.mcp.json not found next to this script at $mcp" }
-
-if ($AllowBash) { $AllowedTools += "Bash" }
-New-Item -ItemType Directory -Force -Path $WorkDir | Out-Null
-
-$claudeArgs = @(
-  "-p", $Prompt,
-  "--output-format", $OutputFormat,
-  "--mcp-config", $mcp,
-  "--strict-mcp-config",
-  "--add-dir", $WorkDir,
-  "--allowedTools"
-) + $AllowedTools
-if ($Model) { $claudeArgs += @("--model", $Model) }
-
-Push-Location $WorkDir
+$ErrorActionPreference = 'Stop'
+if ($AllowBash -or $AllowedTools) {
+  throw 'Arbitrary tool grants are retired. Use a scoped task; the supervisor runs build/test commands.'
+}
+$python = if ($env:HARMONY_PYTHON) { $env:HARMONY_PYTHON } else {
+  Join-Path $env:LOCALAPPDATA 'Programs\Python\Python313\python.exe'
+}
+if (-not (Test-Path -LiteralPath $python)) { throw 'Set HARMONY_PYTHON to the Python executable.' }
+$temporaryTask = $null
 try {
-  if ($PromptFile) {
-    # Long/multi-line prompt delivered via file → pipe to claude stdin.
-    # Avoids subprocess.list2cmdline quoting corruption for special characters.
-    Get-Content -Raw -Path $PromptFile -Encoding UTF8 | & $claude @claudeArgs
-  } elseif ($Prompt) {
-    $Prompt | & $claude @claudeArgs
-  } else {
-    throw "Provide either -Prompt or -PromptFile."
+  if (-not $TaskFile) {
+    if ($PromptFile) { $Prompt = Get-Content -Raw -LiteralPath $PromptFile -Encoding UTF8 }
+    New-Item -ItemType Directory -Force -Path $WorkDir | Out-Null
+    $packet = @{
+      version = 1; task_id = ('manual-' + [guid]::NewGuid().ToString('N'))
+      objective = $Prompt; workdir = (Resolve-Path -LiteralPath $WorkDir).Path
+      mode = $Mode; allowed_files = @($AllowedFiles)
+      acceptance_criteria = @('Return findings, evidence, and remaining risks within the assigned scope.')
+      timeout_seconds = $TimeoutSeconds
+    }
+    if ($Model) { $packet.model = $Model }
+    $temporaryTask = Join-Path $env:TEMP ($packet.task_id + '.json')
+    [System.IO.File]::WriteAllText($temporaryTask, ($packet | ConvertTo-Json -Depth 6),
+      [System.Text.UTF8Encoding]::new($false))
+    $TaskFile = $temporaryTask
   }
-  exit $LASTEXITCODE
+  $workerArgs = @((Join-Path $PSScriptRoot 'delegate.py'))
+  if ($ClaudePath) { $workerArgs += @('--claude', $ClaudePath) }
+  $workerArgs += @('run', $TaskFile)
+  $output = & $python @workerArgs
+  $workerExit = $LASTEXITCODE
+  if ($OutputFormat -eq 'text') {
+    $receipt = ($output -join [Environment]::NewLine) | ConvertFrom-Json
+    if ($receipt.result) { Write-Output $receipt.result } else { Write-Output ($output -join [Environment]::NewLine) }
+  } else {
+    Write-Output $output
+  }
+  exit $workerExit
 }
 finally {
-  Pop-Location
+  if ($temporaryTask -and (Test-Path -LiteralPath $temporaryTask)) {
+    Remove-Item -LiteralPath $temporaryTask
+  }
 }

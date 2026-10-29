@@ -1,11 +1,11 @@
 """
 BMG-Harmony MCP server entrypoint.
 
-Exposes four FastMCP tools for the shared agent coordination board:
-  - post_message        — post an attributed message to a named thread
-  - read_thread         — return full message history for a thread
-  - list_threads        — list all threads (optional state filter)
-  - post_stack_position — convenience wrapper: post kind=position to harmony-stack-decision
+Exposes FastMCP tools for the shared agent coordination board:
+  - post_message        â€” post an attributed message to a named thread
+  - read_thread         â€” return full message history for a thread
+  - list_threads        â€” list all threads (optional state filter)
+  - post_stack_position â€” convenience wrapper: post kind=position to harmony-stack-decision
 
 Logging is directed exclusively to sys.stderr.
 stdout is owned by the FastMCP stdio transport (JSON-RPC wire protocol).
@@ -13,7 +13,7 @@ Any write to stdout outside FastMCP will corrupt the MCP connection.
 """
 
 # ---------------------------------------------------------------------------
-# Logging setup — MUST be first, before any other import that might configure
+# Logging setup â€” MUST be first, before any other import that might configure
 # the root logger or emit output.
 # ---------------------------------------------------------------------------
 import sys
@@ -56,13 +56,13 @@ from server.store import (
 )
 
 # ---------------------------------------------------------------------------
-# Module-level DB connection — opened once in lifespan, used by all tools.
+# Module-level DB connection â€” opened once in lifespan, used by all tools.
 # ---------------------------------------------------------------------------
 _db = None
 
 
 # ---------------------------------------------------------------------------
-# FastMCP lifespan — open/close the SQLite store once per server process.
+# FastMCP lifespan â€” open/close the SQLite store once per server process.
 # ---------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(server):
@@ -70,7 +70,7 @@ async def lifespan(server):
     db_path = os.environ.get("HARMONY_DB_PATH")
     if not db_path:
         logger.error(
-            "HARMONY_DB_PATH environment variable is not set — cannot start server"
+            "HARMONY_DB_PATH environment variable is not set â€” cannot start server"
         )
         raise RuntimeError(
             "HARMONY_DB_PATH environment variable is not set. "
@@ -139,7 +139,7 @@ def list_threads(state: str | None = None) -> dict:
     """List all threads and their current state.
 
     Optionally filter by state (e.g. 'open'). Returns a dict with key
-    'threads' — a list of dicts each containing: thread_id, slug,
+    'threads' â€” a list of dicts each containing: thread_id, slug,
     created_at, state.
     """
     return {"threads": _list_threads(_db, state)}
@@ -217,7 +217,7 @@ def file_dissent(
 def confirm_delivery(message_id: str, agent_id: str) -> dict:
     """Explicit delivery confirmation for response-window consent rules.
 
-    Before confirmation, silence is no_response — not consent.
+    Before confirmation, silence is no_response â€” not consent.
     After confirmation, the response window begins. Idempotent per
     message/agent pair. Returns ack receipt with delivery_confirmed=True.
     """

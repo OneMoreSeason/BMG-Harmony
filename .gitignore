@@ -1,4 +1,4 @@
-# BMG-Harmony live store — never commit
+# BMG-Harmony live store â€” never commit
 # Ignore store contents but track .gitkeep so directory exists after clone
 .harmony/store/*
 !.harmony/store/.gitkeep
@@ -28,3 +28,9 @@ htmlcov/
 .idea/
 *.swp
 *.swo
+
+# Delegation payloads, worker transcripts and watcher state are local only
+.harmony/runs/
+.harmony/tasks/
+.harmony/watcher/
+.harmony/worktrees/
