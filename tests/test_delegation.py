@@ -411,3 +411,26 @@ def test_verification_lock_prevents_concurrent_decisions(task, tmp_path, fake):
     with pytest.raises(ValueError, match="in progress"):
         delegate.verify_run(directory, True, "evidence", tmp_path / "board.sqlite")
     assert json.loads((directory / "state.json").read_text())["verification"] == "pending"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell compatibility entry point")
+@pytest.mark.parametrize("line,exit_code", [
+    ("UAE-CLOSEOUT: owned fixture complete", 0),
+    ("no sentinel here", 1),
+    ("  UAE-CLOSEOUT: quoted prompt text", 1),
+])
+def test_legacy_conductor_requires_final_stdout_sentinel(tmp_path, line, exit_code):
+    # Owned fake CLI consumes stdin; no real Codex/model or repo is used.
+    appdata = tmp_path / "appdata"
+    npm = appdata / "npm"
+    npm.mkdir(parents=True)
+    shim = npm / "codex.cmd"
+    shim.write_text("@echo off\nmore >nul\necho " + line + "\nexit /b 0\n")
+    env = {**os.environ, "APPDATA": str(appdata)}
+    ps = __import__("shutil").which("pwsh") or __import__("shutil").which("powershell")
+    p = subprocess.run([ps, "-NoProfile", "-File", str(BRIDGE / "codex-conductor.ps1"),
+                        "-Objective", "owned fixture", "-WorkDir", str(tmp_path),
+                        "-MaxTurns", "1", "-KillSwitch", str(tmp_path / "STOP")],
+                       env=env, capture_output=True, text=True, timeout=20)
+    assert p.returncode == exit_code, p.stdout + p.stderr
+    assert "conductor finished" in p.stdout

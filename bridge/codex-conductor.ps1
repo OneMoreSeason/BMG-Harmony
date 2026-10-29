@@ -130,11 +130,8 @@ try {
     $stdoutText = Get-Content -Path $outFile -Raw -ErrorAction SilentlyContinue
     if ($stdoutText) { Write-Host $stdoutText }
 
-    # Detect the last sentinel line. Codex puts its final message on stdout; scan stderr as fallback.
-    $sentinel = Select-String -Path $outFile -Pattern '^\s*(UAE-CLOSEOUT|UAE-HALT|UAE-CONTINUE):' -ErrorAction SilentlyContinue | Select-Object -Last 1
-    if (-not $sentinel) {
-      $sentinel = Select-String -Path $errFile -Pattern '^\s*(UAE-CLOSEOUT|UAE-HALT|UAE-CONTINUE):' -ErrorAction SilentlyContinue | Select-Object -Last 1
-    }
+    # Only a column-zero final stdout sentinel counts; echoed prompts/logs do not.
+    $sentinel = Select-String -Path $outFile -Pattern '^(UAE-CLOSEOUT|UAE-HALT|UAE-CONTINUE):' -ErrorAction SilentlyContinue | Select-Object -Last 1
     if (-not $sentinel) {
       Write-Host "[turn $turn] no sentinel emitted; halting for inspection."
       $final = "HALT: missing sentinel"
@@ -154,3 +151,6 @@ finally {
 Write-Host ""
 Write-Host "== conductor finished: $final =="
 Write-Host "Logs: $logDir"
+
+if ($final -like "CLOSEOUT:*") { exit 0 }
+exit 1
