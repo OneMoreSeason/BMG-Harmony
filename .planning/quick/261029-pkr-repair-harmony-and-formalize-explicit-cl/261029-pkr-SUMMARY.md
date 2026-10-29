@@ -75,8 +75,11 @@ OS sandbox isolation and roadmap debate/governance phases are not claimed.
 ## Git and closeout
 Runtime commits: 63fd7c4 (delegation), 47d37f9 (encoding restoration),
 e259f59 (final completion evidence). Documentation/skill/state commit follows.
-Pull-before-push and final origin/main readback are required. Publication receipts
-are recorded at closeout; a live-test blocker remains even after source publication.
+Pull-before-push and final origin/main readback are required. Publication was rejected before process launch by automatic approval review:
+explicit approval is required for https://github.com/OneMoreSeason/BMG-Harmony.git,
+branch main. No pull/push ran. See PUBLISH.md for both approval rejections and the
+required next action. All work remains committed locally; external closeout is
+INCOMPLETE.
 
 ## Next use
 Read bridge/README.md or invoke the installed harmony-delegate skill for an explicitly

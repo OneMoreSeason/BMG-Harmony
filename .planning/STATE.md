@@ -104,10 +104,12 @@ Plan: 0 of 3
 
 | # | Description | Date | Runtime commit | Status | Directory |
 |---|-------------|------|----------------|--------|-----------|
-| 261029-pkr | Repair Harmony and formalize explicit Claude delegation | 2026-10-29 | e259f59 | Local verified; live test pending approval/auth | [receipt](quick/261029-pkr-repair-harmony-and-formalize-explicit-cl/261029-pkr-SUMMARY.md) |
+| 261029-pkr | Repair Harmony and formalize explicit Claude delegation | 2026-10-29 | e259f59 | Local verified; live test/publication blocked | [receipt](quick/261029-pkr-repair-harmony-and-formalize-explicit-cl/261029-pkr-SUMMARY.md) |
 
 The historical phase-planned text above is not a live delegation readiness signal.
 Current maintenance truth: bridge/README.md and the linked quick-task receipt.
 No watcher was enabled. 103 local tests pass. Live Claude execution is unproved.
 Last activity: 2026-10-29 - Completed local repair for quick task 261029-pkr;
-live provider/guard round trip remains incomplete.
+live provider/guard round trip and origin/main publication remain incomplete.
+Automatic review requires explicit approval for each external step; see PUBLISH.md
+in the quick-task directory. No pull/push ran.
