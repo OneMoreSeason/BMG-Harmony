@@ -113,3 +113,11 @@ Last activity: 2026-10-29 - Completed local repair for quick task 261029-pkr;
 live provider/guard round trip and origin/main publication remain incomplete.
 Automatic review requires explicit approval for each external step; see PUBLISH.md
 in the quick-task directory. No pull/push ran.
+
+### Delegation follow-through - 2026-10-29
+
+Explicit user approval received for the read-only Harmony Claude test and origin/main
+publication. Five commits pushed and remote SHA verified at 60105dd. The live worker
+launched but could not authenticate: OAuth session expired and refresh failed. No
+review result was accepted. Remaining: correct standalone auth, then a new task ID
+for the already-approved review. Source publication and external scope are unblocked.

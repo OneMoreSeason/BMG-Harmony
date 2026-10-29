@@ -40,3 +40,30 @@ Obtain explicit approval separately for:
 2. Publishing the committed repair to OneMoreSeason/BMG-Harmony main.
 
 Both can stay local/deferred. No watcher has been installed as a service or activated.
+
+## Approved follow-through - 2026-10-29
+
+The user explicitly approved both the read-only Harmony test and publication of the
+five commits to OneMoreSeason/BMG-Harmony main. The earlier approval rejections above
+are historical and no longer block those two scoped actions.
+
+Live task: live-review-53a30b32726544bb816ef2ab05054628.
+Worker launched with review-only tools and returned exit 1 after 2.272 seconds:
+"Failed to authenticate: OAuth session expired and could not be refreshed".
+Claude session: bd26cdc9-d131-4166-8ef4-45b87c617116.
+No review was completed or accepted. Artifacts are under .harmony/runs/<task_id>/.
+The task board receipt is event 01a189d2-da66-7d72-95b9-d85181632f61, revision 216.
+Do not retry until the standalone authentication cause is corrected. Existing user
+app sessions were not modified; no credentials were read, copied or edited.
+
+Publication succeeded:
+- git pull --ff-only origin main: already up to date.
+- git push origin main: c7a9a6f..60105dd, main -> main.
+- Local HEAD and remote refs/heads/main both verified as
+  60105ddda7c1f6faaa46a6abc32ff329c9d98a0c.
+- git status -sb: main...origin/main with no dirty paths or ahead count.
+
+Remaining blocker: usable standalone Claude Code OAuth, then a new bounded task ID
+for the same already-authorized read-only review. No fresh sharing/publication
+permission is needed for this unchanged scope. No watcher is active.
+This follow-through receipt is a documentation-only closeout update.

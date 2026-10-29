@@ -86,3 +86,11 @@ Read bridge/README.md or invoke the installed harmony-delegate skill for an expl
 authorized task. Run doctor before trusting executable/auth context. Create a new task
 ID, use direct run, inspect actual artifacts and verify with evidence. Never restart
 a watcher or replay historical inbox work merely because this setup now exists.
+
+## Follow-through after explicit approval
+
+The five implementation/guide commits are now published to origin/main at 60105dd;
+local/remote SHA equality and clean status were verified. See PUBLISH.md for proof.
+The approved read-only Claude task launched but failed before review with expired,
+unrefreshable standalone OAuth. External scope approval is resolved; live model/guard
+validation still remains incomplete solely because of authentication.
